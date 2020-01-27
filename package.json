@@ -1,0 +1,13 @@
+{
+    "author": "victor@hepoca.com",
+    "name": "node-temperaturesensor",
+    "version": "0.0.0",
+    "description": "TemperatureSensor",
+    "main": "temperaturesensor.js",
+    "dependencies": {
+      "express": "^4.16.2",
+      "http": "0.0.0",
+      "nconf": "^0.10.0",
+      "node-dht-sensor": "0.0.34"
+    }
+  }
