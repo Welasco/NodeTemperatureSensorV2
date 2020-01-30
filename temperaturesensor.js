@@ -31,7 +31,7 @@ var deviceid = nconf.get('temperaturesensor:deviceid');
 
 // Used only to check if NodeJS is running
 app.get("/", function (req, res) {
-    sensor.read(11, 21, function(err, temperature, humidity) {
+    sensor.read(11, 4, function(err, temperature, humidity) {
         if (!err) {
 
             var vartemperatureF = (temperature.toFixed(1) * 9 / 5 + 32 )
