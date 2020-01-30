@@ -74,7 +74,7 @@ app.get('/config/:host', function (req, res) {
       });
       logger("SaveConfig","Temperature Sensor DeviceID Saved: "+parts);
       deviceid = nconf.get('temperaturesensor:deviceid');
-      logger("SaveConfig","Temperature Sensor Reloading Config File: "+alarmPassword);
+      logger("SaveConfig","Temperature Sensor Reloading Config File: "+deviceid);
       
   }
   else{

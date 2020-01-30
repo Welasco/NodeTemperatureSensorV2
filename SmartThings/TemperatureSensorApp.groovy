@@ -152,8 +152,8 @@ private addTemperatureSensorDeviceType() {
     //def endpoint = settings.proxyAddress + ":" + settings.proxyPort
     //sendCommand('/config/'+settings.deviceID,endpoint)
     writeLog("TemperatureSensorSmartApp - Added TemperatureSensorDeviceType device: ${deviceId}")
-    app.updateSetting("deviceName",[type: "text", value: ""])
-    app.updateSetting("deviceID",[type: "text", value: ""])
+    //app.updateSetting("deviceName",[type: "text", value: ""])
+    //app.updateSetting("deviceID",[type: "text", value: ""])
   }
   else{
     writeLog("TemperatureSensorSmartApp - DeviceID already exist: ${deviceId}")
