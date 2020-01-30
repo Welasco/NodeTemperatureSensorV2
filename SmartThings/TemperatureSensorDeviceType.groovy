@@ -11,8 +11,14 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+
+preferences {
+    input("hostaddress", "text", title: "IP Address for Server:", description: "Ex: 10.0.0.12 or 192.168.0.4 (no http://)")
+    input("hostport", "number", title: "Port of Server", description: "port")
+}
+
 metadata {
-	definition (name: "Temperature Sensor", namespace: "TemperatureSensor", author: "SmartThings") {
+	definition (name: "Temperature Sensorv2", namespace: "TemperatureSensorv2", author: "SmartThings") {
 		capability "Temperature Measurement"
 		capability "Relative Humidity Measurement"
 		capability "Sensor"
@@ -61,10 +67,31 @@ def refresh(){
     sendRaspberryCommand("temperaturesensor")
 }
 
+def updated() {
+	//def path = "/config/"+settings.deviceID
+	def path = "/config/"+device.deviceNetworkId
+	def endpoint = settings.hostaddress + ":" + settings.hostport
+	parent.writeLog("TemperatureSensor Device Type - deviceID is: "+path)
+    parent.sendCommand(path,endpoint);
+	def subscribepath = '/subscribe/'+parent.getNotifyAddress() 
+	parent.sendCommand(subscribepath,endpoint)
+	parent.writeLog("TemperatureSensor Device Type - subscribe is: "+subscribepath)
+}
+
 def sendRaspberryCommand(String command) {
 	def path = "/api/$command"
-    parent.sendCommand(path);
+	def endpoint = settings.hostaddress + ":" + settings.hostport
+    parent.sendCommand(path,endpoint);
 }
+
+// def setdevicesettings(String proxyAddress, String proxyPort){
+// 	settings.hostaddress = proxyAddress
+// 	settings.hostport = proxyPort
+// 	parent.writeLog("TemperatureSensor Device Type - received proxyAddress $proxyAddress")
+// 	parent.writeLog("TemperatureSensor Device Type - received proxyPort $proxyPort")
+// 	parent.writeLog("TemperatureSensor Device Type - defined setting hostaddress " + settings.hostaddress)
+// 	parent.writeLog("TemperatureSensor Device Type - defined setting hostaport " + settings.hostport)
+// }
 
 // Parse incoming device messages to generate events
 /*

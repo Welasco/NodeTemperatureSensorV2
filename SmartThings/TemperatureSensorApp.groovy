@@ -6,10 +6,10 @@
  */
 
 definition(
-    name: "Temperature Sensor SmartApp",
-    namespace: "Temperature Sensor",
+    name: "Temperature Sensor SmartApp v2",
+    namespace: "Temperature Sensor v2",
     author: "Victor Santana",
-    description: "Temperature Sensor",
+    description: "Temperature Sensor v2",
     category: "My Apps",
     iconUrl: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather2-icn",
     iconX2Url: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather2-icn?displaySize=2x",
@@ -22,6 +22,8 @@ import groovy.json.JsonSlurper
 
 preferences {
 	page(name: "page1")
+  page(name: "addChildDevice")
+
 }
 
 def page1() {
@@ -29,14 +31,33 @@ def page1() {
     section("SmartThings Hub") {
       input "hostHub", "hub", title: "Select Hub", multiple: false, required: true
     }
-    section("SmartThings Raspberry") {
-      input "proxyAddress", "text", title: "Proxy Address", description: "(ie. 192.168.1.10)", required: true
-      input "proxyPort", "text", title: "Proxy Port", description: "(ie. 3001)", required: true, defaultValue: "3001"
-    }
 		section("Enable Debug Log at SmartThing IDE"){
 			input "idelog", "bool", title: "Select True or False:", defaultValue: false, required: false
-		}     
-  }
+		}
+
+    section("Add Temperature Sensor") {
+			href (name: "addChildDevice", 
+			title: "Add Temperature Sensor title", 
+			description: "Add Temperature Sensor description",
+			image: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather2-icn",
+			required: false,
+			page: "addChildDevice"
+			)
+		}
+	}
+}
+
+def addChildDevice(){
+  dynamicPage(name: "addChildDevice", install: true, uninstall: true) {
+    // section("SmartThings Raspberry") {
+    //   input "proxyAddress", "text", title: "Proxy Address", description: "(ie. 192.168.1.10)", required: true
+    //   input "proxyPort", "text", title: "Proxy Port", description: "(ie. 3001)", required: true, defaultValue: "3001"
+    // }
+    section("Add Temperature Sensor") {
+      input "deviceName", "text", title: "DeviceName", description: "Type a unique name for the device", required: true
+      input "deviceID", "text", title: "DeviceID", description: "Type a unique DeviceID for Temperature Sensor", required: true
+    }     
+  }  
 }
 
 def installed() {
@@ -49,7 +70,9 @@ def updated() {
   writeLog("TemperatureSensorSmartApp - Updated with settings: ${settings}")
 	//unsubscribe()
 	initialize()
-  sendCommand('/subscribe/'+getNotifyAddress())
+  def endpoint = settings.proxyAddress + ":" + settings.proxyPort
+  //sendCommand('/subscribe/'+getNotifyAddress(),endpoint)
+  addTemperatureSensorDeviceType()
 }
 
 def initialize() {
@@ -71,18 +94,18 @@ def lanResponseHandler(evt) {
 
     //verify that this message is from STNP IP:Port
     //IP and Port are only set on HTTP GET response and we need the MAC
-    if (map.ip == convertIPtoHex(settings.proxyAddress) &&
-        map.port == convertPortToHex(settings.proxyPort)) {
-            if (map.mac) {
-            state.proxyMac = map.mac
-        }
-    }
+    // if (map.ip == convertIPtoHex(settings.proxyAddress) &&
+    //     map.port == convertPortToHex(settings.proxyPort)) {
+    //         if (map.mac) {
+    //         state.proxyMac = map.mac
+    //     }
+    // }
 
     //verify that this message is from STNP MAC
     //MAC is set on both HTTP GET response and NOTIFY
-    if (map.mac != state.proxyMac) {
-        //return
-    }
+    // if (map.mac != state.proxyMac) {
+    //     //return
+    // }
 
     def headers = getHttpHeaders(map.headers);
     def body = getHttpBody(map.body);
@@ -92,7 +115,7 @@ def lanResponseHandler(evt) {
         //return
     //}
 
-    if (headers.'device' != 'temperaturesensor') {
+    if (headers.'deviceType' != 'temperaturesensor') {
       writeLog("TemperatureSensorSmartApp - Received event ${evt.stringValue} but it didn't came from TemperatureSensor")
       writeLog("TemperatureSensorSmartApp - Received event but it didn't came from TemperatureSensor headers:  ${headers}")
       writeLog("TemperatureSensorSmartApp - Received event but it didn't came from TemperatureSensor body: ${body}")      
@@ -102,11 +125,12 @@ def lanResponseHandler(evt) {
     //log.trace "Honeywell Security event: ${evt.stringValue}"
     writeLog("TemperatureSensorSmartApp - Received event headers:  ${headers}")
     writeLog("TemperatureSensorSmartApp - Received event body: ${body}")
-    updateTemperatureSensorceDeviceType(body.command)
+    updateTemperatureSensorceDeviceType(body.command,headers.deviceID)
 }
 
-private updateTemperatureSensorceDeviceType(String cmd) {
-	def TemperatureSensorNetworkID = "TemperatureSensor"
+private updateTemperatureSensorceDeviceType(String cmd,deviceID) {
+	//def TemperatureSensorNetworkID = "TemperatureSensor"
+  def TemperatureSensorNetworkID = deviceID
   def TemperatureSensordevice = getChildDevice(TemperatureSensorNetworkID)
   if (TemperatureSensordevice) {
     TemperatureSensordevice.TemperatureSensorparse("${cmd}")
@@ -115,10 +139,24 @@ private updateTemperatureSensorceDeviceType(String cmd) {
 }
 
 private addTemperatureSensorDeviceType() {
-  def deviceId = 'TemperatureSensor'
+  // def deviceId = 'TemperatureSensor'
+  def deviceId = settings.deviceID
+  def deviceName = settings.deviceName
   if (!getChildDevice(deviceId)) {
-    addChildDevice("TemperatureSensor", "Temperature Sensor", deviceId, hostHub.id, ["name": "TemperatureSensor", label: "TemperatureSensor", completedSetup: true])
+    def d = addChildDevice("TemperatureSensorv2", "Temperature Sensorv2", deviceId, hostHub.id, ["name": deviceName, label: deviceName, completedSetup: true])
+    d.take()
+    writeLog("TemperatureSensorSmartApp - device DisplayName: ${d.displayName}")
+    // d.setdevicesettings(settings.proxyAddress,settings.proxyPort)
+    // d.updateSetting(hostaddress,[type: text, value: settings.proxyAddress])
+    // d.updateSetting(hostport,[type: number, value: settings.proxyPort])
+    //def endpoint = settings.proxyAddress + ":" + settings.proxyPort
+    //sendCommand('/config/'+settings.deviceID,endpoint)
     writeLog("TemperatureSensorSmartApp - Added TemperatureSensorDeviceType device: ${deviceId}")
+    app.updateSetting("deviceName",[type: "text", value: ""])
+    app.updateSetting("deviceID",[type: "text", value: ""])
+  }
+  else{
+    writeLog("TemperatureSensorSmartApp - DeviceID already exist: ${deviceId}")
   }
 }
 
@@ -130,18 +168,18 @@ private getNotifyAddress() {
   return settings.hostHub.localIP + ":" + settings.hostHub.localSrvPortTCP
 }
 
-private sendCommand(path) {
-  if (settings.proxyAddress.length() == 0 ||
-    settings.proxyPort.length() == 0) {
-    log.error "SmartThings Node Proxy configuration not set!"
-    return
-  }
+private sendCommand(path,endpoint) {
+  // if (settings.proxyAddress.length() == 0 ||
+  //   settings.proxyPort.length() == 0) {
+  //   log.error "SmartThings Node Proxy configuration not set!"
+  //   return
+  // }
 
-  def host = getProxyAddress()
+  //def host = getProxyAddress()
+  def host = endpoint
   def headers = [:]
   headers.put("HOST", host)
   headers.put("Content-Type", "application/json")
-  headers.put("stnp-auth", settings.authCode)
 
   def hubAction = new physicalgraph.device.HubAction(
       method: "GET",

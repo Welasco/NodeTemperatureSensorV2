@@ -19,6 +19,7 @@ var logger = function(mod,str) {
 
 logger("Modules","Modules loaded");
 var httpport = nconf.get('httpport');
+var deviceid = nconf.get('temperaturesensor:deviceid');
 
 //////////////////////////////////////////////////////////////////
 // Creating Endpoints
@@ -56,6 +57,31 @@ app.get("/api/temperaturesensor", function (req, res) {
     logger("HTTP","Request at /api/temperaturesensor");
     //res.send("200 OK");
     res.end();
+});
+
+// Used to save the Temperature Sensor DeviceID
+app.get('/config/:host', function (req, res) {
+  //var parts = req.params.host.split(":");
+  var parts = req.params.host;
+  if(parts != "null"){
+      nconf.set('temperaturesensor:deviceid', parts);
+      nconf.save(function (err) {
+          if (err) {
+              logger("SaveConfig",'Configuration error: '+err.message);
+              res.status(500).json({ error: 'Configuration error: '+err.message });
+              return;
+          }
+      });
+      logger("SaveConfig","Temperature Sensor DeviceID Saved: "+parts);
+      deviceid = nconf.get('temperaturesensor:deviceid');
+      logger("SaveConfig","Temperature Sensor Reloading Config File: "+alarmPassword);
+      
+  }
+  else{
+      logger("SaveConfig","Failed to save Temperature Sensor DeviceID cannot be null");
+  }
+  res.end();
+  
 });
 
 /**
@@ -117,7 +143,8 @@ var notify = function(data) {
       headers: {
         'CONTENT-TYPE': 'application/json',
         'CONTENT-LENGTH': Buffer.byteLength(data),
-        'device': 'temperaturesensor'
+        'deviceType': 'temperaturesensor',
+        'deviceID': nconf.get('temperaturesensor:deviceid')
       }
     };
   
@@ -131,7 +158,7 @@ var notify = function(data) {
 
 function collecttemperature(){
     
-    sensor.read(11, 21, function(err, temperature, humidity) {
+    sensor.read(11, 4, function(err, temperature, humidity) {
         if (!err) {
 
             var vartemperatureF = (temperature.toFixed(1) * 9 / 5 + 32 )
