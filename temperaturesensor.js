@@ -19,6 +19,7 @@ var logger = function(mod,str) {
 
 logger("Modules","Modules loaded");
 var httpport = nconf.get('httpport');
+var GPIO = nconf.get('GPIO');
 var deviceid = nconf.get('temperaturesensor:deviceid');
 
 //////////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ var deviceid = nconf.get('temperaturesensor:deviceid');
 
 // Used only to check if NodeJS is running
 app.get("/", function (req, res) {
-    sensor.read(11, 4, function(err, temperature, humidity) {
+    sensor.read(11, GPIO, function(err, temperature, humidity) {
         if (!err) {
 
             var vartemperatureF = (temperature.toFixed(1) * 9 / 5 + 32 )
@@ -158,7 +159,7 @@ var notify = function(data) {
 
 function collecttemperature(){
     
-    sensor.read(11, 4, function(err, temperature, humidity) {
+    sensor.read(11, GPIO, function(err, temperature, humidity) {
         if (!err) {
 
             var vartemperatureF = (temperature.toFixed(1) * 9 / 5 + 32 )

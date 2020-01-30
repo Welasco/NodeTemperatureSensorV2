@@ -48,6 +48,8 @@ def page1() {
 }
 
 def addChildDevice(){
+  app.updateSetting("deviceName",[type: "text", value: ""])
+  app.updateSetting("deviceID",[type: "text", value: ""])
   dynamicPage(name: "addChildDevice", install: true, uninstall: true) {
     // section("SmartThings Raspberry") {
     //   input "proxyAddress", "text", title: "Proxy Address", description: "(ie. 192.168.1.10)", required: true

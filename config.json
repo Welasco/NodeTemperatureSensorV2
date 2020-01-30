@@ -1,4 +1,5 @@
 {
-  "httpport": 3001
+  "httpport": 3001,
+  "GPIO": 4
 }
   
