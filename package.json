@@ -8,6 +8,6 @@
       "express": "^4.16.2",
       "http": "0.0.0",
       "nconf": "^0.10.0",
-      "node-dht-sensor": "0.0.34"
+      "node-dht-sensor": "0.4.0"
     }
   }
