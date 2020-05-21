@@ -32,6 +32,10 @@ var deviceid = nconf.get('temperaturesensor:deviceid');
 
 // Used only to check if NodeJS is running
 app.get("/", function (req, res) {
+    res.send("<html><body><h1>TemperatureSensor ON</h1><br><br><a href = \"/tempcheck\" >Check temperature</a></body></html>");
+});
+
+app.get("/tempcheck", function (req, res) {
     sensor.read(11, GPIO, function(err, temperature, humidity) {
         if (!err) {
 
@@ -49,8 +53,7 @@ app.get("/", function (req, res) {
             logger("Reading Temperature Loop","Error: " + err);
             res.send("<html><body><h1>TemperatureSensor ON</h1></body></html>");
         }
-    });        
-    //res.send("<html><body><h1>TemperatureSensor ON</h1></body></html>");
+    });  
 });
 
 app.get("/api/temperaturesensor", function (req, res) {
