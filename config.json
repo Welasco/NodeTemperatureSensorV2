@@ -1,5 +1,12 @@
 {
   "httpport": 3001,
-  "GPIO": 4
+  "GPIO": 4,
+  "temperaturesensor": {
+    "deviceid": "CPDTemperature"
+  },
+  "notify": {
+    "address": "192.168.0.200",
+    "port": "39500"
+  }
 }
   
